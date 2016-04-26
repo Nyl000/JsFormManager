@@ -430,8 +430,9 @@ JsFormManager.prototype.RequiredValidator = function(properties) {this.init(prop
 JsFormManager.prototype.RequiredValidator.prototype = Object.create(JsFormManager.prototype.Validator.prototype);
 
 JsFormManager.prototype.RequiredValidator.prototype.isValid = function(value) {
-    if (typeof value === 'array') {
-        return value.length === 0 ? false : (value.length == 1 && value[0] == '') ? false : true  ;
+
+    if (typeof value === 'object') {
+        return value.length === 0 ? false : (value.length == 1 && value[0] === '') ? false : true  ;
     }
     return value !== '' && value != null && typeof value !== 'undefined';
 
