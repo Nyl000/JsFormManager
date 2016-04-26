@@ -477,8 +477,26 @@ JsFormManager.prototype.DateValidator.prototype.isValid = function(value, elemen
 };
 
 
+JsFormManager.prototype.MinLengthValidator = function(properties) {
+    if (!properties.value) { throw new TypeError('MinLengthValidator must have a "value" property');}
+    this.init(properties)
+};
+JsFormManager.prototype.MinLengthValidator.prototype = Object.create(JsFormManager.prototype.Validator.prototype);
+JsFormManager.prototype.MinLengthValidator.prototype.isValid = function(value, element) {
+    return value.length >= this.value;
+
+};
 
 
+JsFormManager.prototype.MaxLengthValidator = function(properties) {
+    if (!properties.value) { throw new TypeError('MaxLengthValidator must have a "value" property');}
+    this.init(properties)
+};
+JsFormManager.prototype.MaxLengthValidator.prototype = Object.create(JsFormManager.prototype.Validator.prototype);
+JsFormManager.prototype.MaxLengthValidator.prototype.isValid = function(value, element) {
+    return value.length <= this.value;
+
+};
 
 
 
