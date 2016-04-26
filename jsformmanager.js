@@ -64,6 +64,8 @@ JsFormManager.prototype.bindSelect = function(idselect,idselectMsg) {
 
 };
 
+
+
 JsFormManager.prototype.bindText = function(idinput,idMsg) {
     var elem = document.getElementById(idinput);
     if (elem.getAttribute('name') === null) {elem.setAttribute('name',idinput)}
@@ -157,6 +159,10 @@ JsFormManager.prototype.Field.prototype.init = function(name, options){
 };
 
 JsFormManager.prototype.Field.prototype.listen = function() {
+    //used for checkboxes and multi-name elements.
+    var elems =document.getElementsByName(this.name);
+    console.log(elems);
+    //used for others
     var elem = document.getElementById(this.id);
     if (this instanceof JsFormManager.prototype.TextField) {
         elem.addEventListener('keyup', this.changeListener.bind(this), false);
@@ -166,6 +172,10 @@ JsFormManager.prototype.Field.prototype.listen = function() {
     }
     else if (this instanceof JsFormManager.prototype.SelectField) {
         elem.addEventListener('change', this.changeListener.bind(this), false);
+    }
+    else if (this instanceof JsFormManager.prototype.RadioField) {
+
+        for (var i=0; i<elems.length; i++) { elems[i].addEventListener('click', this.changeListener.bind(this), false);};
     }
     else {
         elem.addEventListener('keyup', this.changeListener.bind(this), false);
@@ -183,7 +193,16 @@ JsFormManager.prototype.Field.prototype.getHtmlAttributesString = function(){
 };
 
 JsFormManager.prototype.Field.prototype.changeListener = function(e){
-    this.value = document.getElementById(this.id).value;
+    if (this instanceof JsFormManager.prototype.RadioField) {
+        var options = document.getElementsByName(this.name);
+        this.value = '';
+        for (var i=0; i<options.length; i++ ) {
+            if (options[i].checked) { this.value = options[i].getAttribute('value');}
+        }
+    }
+    else {
+        this.value = document.getElementById(this.id).value;
+    }
     this.validate();
 };
 
@@ -362,7 +381,9 @@ JsFormManager.prototype.RadioField.prototype.getRenderer = function() {
     var render = '<div class="wrapper_'+this.id+'">';
     render += '<label for="'+this.id+'">'+this.label+'</label>';
     for (var i in this.options){
-        render += '<span '+this.getHtmlAttributesString() +' class="radioitem"><input name="'+this.id+'" type="radio" value="'+i+'" selected="'+(i === this.value ? 'true':'false')+'" />'+this.options[i]+'</span>';
+        var checked = this.value && i == this.value ? 'checked': '';
+
+        render += '<span '+this.getHtmlAttributesString() +' class="radioitem"><input name="'+this.name+'" type="radio" value="'+i+'" '+checked+' />'+ this.options[i]+'</span>';
     }
     render += '<span class="msg" id="msg_'+this.id+'"></span>';
 
@@ -420,7 +441,7 @@ JsFormManager.prototype.RegexValidator = function(properties) {
 };
 JsFormManager.prototype.RegexValidator.prototype = Object.create(JsFormManager.prototype.Validator.prototype);
 JsFormManager.prototype.RegexValidator.prototype.isValid = function(value, element) {
-
+    console.log(value);
     return this.pattern.test(value);
 
 };
