@@ -200,6 +200,14 @@ JsFormManager.prototype.Field.prototype.changeListener = function(e){
             if (options[i].checked) { this.value = options[i].getAttribute('value');}
         }
     }
+    else if (this instanceof JsFormManager.prototype.MultiSelectField) {
+        var options = this.element.childNodes;
+        this.value = [];
+        for (var i=0; i<options.length; i++ ) {
+            if (options[i].selected) { this.value.push(options[i].getAttribute('value'));}
+        }
+    }
+
     else {
         this.value = document.getElementById(this.id).value;
     }
@@ -338,11 +346,14 @@ JsFormManager.prototype.HiddenField.prototype.type = "hidden";
 
 JsFormManager.prototype.SelectField = function(name, options) { this.init(name, options);};
 JsFormManager.prototype.SelectField.prototype = Object.create(JsFormManager.prototype.Field.prototype);
+JsFormManager.prototype.SelectField.prototype.multiple = false;
 
 JsFormManager.prototype.SelectField.prototype.getRenderer = function() {
+    if (this.multiple) { this.name = this.name+'[]'; var multiple = "multiple=\"true\""}
+    else { var multiple= "";}
     var render = '<div class="wrapper_'+this.id+'">';
     render += '<label for="'+this.id+'">'+this.label+'</label>';
-    render += '<select '+this.getHtmlAttributesString() +' class="'+this.class+'" name="'+this.name+'" id="'+this.id+'" >';
+    render += '<select '+multiple+' '+this.getHtmlAttributesString() +' class="'+this.class+'" name="'+this.name+'" id="'+this.id+'" >';
     for (var i in this.options){
         render += '<option value="'+i+'" selected="'+(i === this.value ? 'true':'false')+'">'+this.options[i]+'</option>';
     }
@@ -352,6 +363,11 @@ JsFormManager.prototype.SelectField.prototype.getRenderer = function() {
     render+='</div>';
     return render;
 };
+
+JsFormManager.prototype.MultiSelectField = function(name, options) { this.init(name, options);};
+JsFormManager.prototype.MultiSelectField.prototype = Object.create(JsFormManager.prototype.SelectField.prototype);
+JsFormManager.prototype.MultiSelectField.prototype.multiple = true;
+
 
 /**
  * Date Field (must be date formated (AAAA-MM-DD)
@@ -372,8 +388,6 @@ JsFormManager.prototype.DateField.prototype.validate = function() {
 };
 
 
-
-
 JsFormManager.prototype.RadioField = function(name, options) { this.init(name, options);};
 JsFormManager.prototype.RadioField.prototype = Object.create(JsFormManager.prototype.Field.prototype);
 
@@ -389,7 +403,6 @@ JsFormManager.prototype.RadioField.prototype.getRenderer = function() {
 
     render+='</div>';
     return render;
-
 
 };
 
@@ -417,6 +430,9 @@ JsFormManager.prototype.RequiredValidator = function(properties) {this.init(prop
 JsFormManager.prototype.RequiredValidator.prototype = Object.create(JsFormManager.prototype.Validator.prototype);
 
 JsFormManager.prototype.RequiredValidator.prototype.isValid = function(value) {
+    if (typeof value === 'array') {
+        return value.length === 0 ? false : (value.length == 1 && value[0] == '') ? false : true  ;
+    }
     return value !== '' && value != null && typeof value !== 'undefined';
 
 };
@@ -441,7 +457,6 @@ JsFormManager.prototype.RegexValidator = function(properties) {
 };
 JsFormManager.prototype.RegexValidator.prototype = Object.create(JsFormManager.prototype.Validator.prototype);
 JsFormManager.prototype.RegexValidator.prototype.isValid = function(value, element) {
-    console.log(value);
     return this.pattern.test(value);
 
 };
